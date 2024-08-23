@@ -95,6 +95,15 @@ impl Manga {
         .await?
     }
 
+    pub async fn open_manga_with_id(&self, id: i64) -> anyhow::Result<()> {
+        let db = self.db.clone();
+        rt().spawn(async move {
+            let ts = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
+            db.update_manga_time(id, ts).await?;
+            Ok(())
+        }).await?
+    }
+
     pub async fn get_manga(&self, id: i64) -> anyhow::Result<Option<MangaData>> {
         let db = self.db.clone();
         rt().spawn(async move { db.find_manga(id).await }).await?

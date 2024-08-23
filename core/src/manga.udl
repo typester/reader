@@ -17,6 +17,8 @@ interface Manga {
   [Async, Throws=MangaError]
   MangaData open_manga(Link link);
   [Async, Throws=MangaError]
+  void open_manga_with_id(i64 id);
+  [Async, Throws=MangaError]
   MangaData? get_manga(i64 id);
   [Async, Throws=MangaError]
   ChapterDb? get_chapter(i64 id);

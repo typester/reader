@@ -793,6 +793,8 @@ internal open class UniffiVTableCallbackInterfaceMangaSite(
 
 
 
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -848,6 +850,8 @@ internal interface UniffiLib : Library {
     fun uniffi_manga_fn_method_manga_migration_available(`ptr`: Pointer,
     ): Long
     fun uniffi_manga_fn_method_manga_open_manga(`ptr`: Pointer,`link`: RustBuffer.ByValue,
+    ): Long
+    fun uniffi_manga_fn_method_manga_open_manga_with_id(`ptr`: Pointer,`id`: Long,
     ): Long
     fun uniffi_manga_fn_method_manga_reset_db(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
@@ -1003,6 +1007,8 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_manga_checksum_method_manga_open_manga(
     ): Short
+    fun uniffi_manga_checksum_method_manga_open_manga_with_id(
+    ): Short
     fun uniffi_manga_checksum_method_manga_reset_db(
     ): Short
     fun uniffi_manga_checksum_method_manga_supported_sites(
@@ -1069,6 +1075,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_open_manga() != 48608.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_manga_checksum_method_manga_open_manga_with_id() != 62593.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_reset_db() != 176.toShort()) {
@@ -1759,6 +1768,8 @@ public interface MangaInterface {
     
     suspend fun `openManga`(`link`: Link): MangaData
     
+    suspend fun `openMangaWithId`(`id`: kotlin.Long)
+    
     fun `resetDb`()
     
     fun `supportedSites`(): List<MangaSite>
@@ -2074,6 +2085,28 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
         { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_rust_buffer(future) },
         // lift function
         { FfiConverterTypeMangaData.lift(it) },
+        // Error FFI converter
+        MangaException.ErrorHandler,
+    )
+    }
+
+    
+    @Throws(MangaException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `openMangaWithId`(`id`: kotlin.Long) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_manga_fn_method_manga_open_manga_with_id(
+                thisPtr,
+                FfiConverterLong.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
         // Error FFI converter
         MangaException.ErrorHandler,
     )
