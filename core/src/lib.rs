@@ -9,7 +9,7 @@ use std::{
 };
 
 use anyhow::bail;
-use db::{ChapterDb, Db, MangaDb};
+use db::{ChapterDb, Db, MangaData};
 use error::MangaError;
 use log::{FFILogLayer, Logger};
 use sites::{jmangaorg::Jmangaorg, spoilerplustv::Spoilerplustv, Link, MangaSite};
@@ -71,12 +71,12 @@ impl Manga {
         self.db.reset()
     }
 
-    pub async fn list_manga(&self) -> anyhow::Result<Vec<MangaDb>> {
+    pub async fn list_manga(&self) -> anyhow::Result<Vec<MangaData>> {
         let db = self.db.clone();
         rt().spawn(async move { db.list_manga().await }).await?
     }
 
-    pub async fn open_manga(&self, link: Link) -> anyhow::Result<MangaDb> {
+    pub async fn open_manga(&self, link: Link) -> anyhow::Result<MangaData> {
         let db = self.db.clone();
         rt().spawn(async move {
             let link = link;
@@ -94,7 +94,7 @@ impl Manga {
         .await?
     }
 
-    pub async fn get_manga(&self, id: i64) -> anyhow::Result<Option<MangaDb>> {
+    pub async fn get_manga(&self, id: i64) -> anyhow::Result<Option<MangaData>> {
         let db = self.db.clone();
         rt().spawn(async move { db.find_manga(id).await }).await?
     }

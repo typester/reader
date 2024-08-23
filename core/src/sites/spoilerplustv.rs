@@ -31,7 +31,7 @@ impl Default for Spoilerplustv {
 #[async_trait]
 impl MangaSite for Spoilerplustv {
     fn name(&self) -> String {
-        "Spoilerplus".into()
+        "spoilerplus.tv".into()
     }
 
     fn request_headers(&self) -> HashMap<String, String> {

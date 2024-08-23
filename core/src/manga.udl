@@ -13,11 +13,11 @@ interface Manga {
   [Throws=MangaError]
   void reset_db();
   [Async, Throws=MangaError]
-  sequence<MangaDb> list_manga();
+  sequence<MangaData> list_manga();
   [Async, Throws=MangaError]
-  MangaDb open_manga(Link link);
+  MangaData open_manga(Link link);
   [Async, Throws=MangaError]
-  MangaDb? get_manga(i64 id);
+  MangaData? get_manga(i64 id);
   [Async, Throws=MangaError]
   ChapterDb? get_chapter(i64 id);
   [Async, Throws=MangaError]
@@ -62,10 +62,11 @@ interface Logger {
   void log(string text);
 };
 
-dictionary MangaDb {
+dictionary MangaData {
   i64 id;
   string title;
   string url;
+  string domain;
   string? image;
   i64 created_at;
   i64 updated_at;

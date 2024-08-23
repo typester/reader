@@ -10,14 +10,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.unknownplace.manga.Shared
-import uniffi.manga.MangaDb
+import uniffi.manga.MangaData
 import uniffi.manga.MangaException
 
 private const val TAG = "MangaListViewModel"
 
+
+
 data class MangaListUIState(
     var loading: Boolean = true,
-    var list: List<MangaDb> = emptyList(),
+    var list: List<MangaData> = emptyList(),
 )
 
 class MangaListViewModel : ViewModel() {

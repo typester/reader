@@ -8,6 +8,7 @@ use std::{
 use anyhow::bail;
 use lazy_static::lazy_static;
 use regex::Regex;
+use reqwest::Url;
 use sqlx::{migrate::Migrate, Connection, SqliteConnection, SqlitePool};
 
 use crate::error::MangaError;
@@ -79,11 +80,11 @@ impl Db {
         Ok(())
     }
 
-    pub async fn list_manga(&self) -> anyhow::Result<Vec<MangaDb>> {
+    pub async fn list_manga(&self) -> anyhow::Result<Vec<MangaData>> {
         let list: Vec<MangaDb> = sqlx::query_as("SELECT * FROM manga ORDER BY updated_at DESC")
             .fetch_all(&self.pool)
             .await?;
-        Ok(list)
+        Ok(list.into_iter().map(MangaData::from).collect())
     }
 
     pub async fn create_manga(
@@ -91,7 +92,7 @@ impl Db {
         title: String,
         url: String,
         image: Option<String>,
-    ) -> anyhow::Result<MangaDb> {
+    ) -> anyhow::Result<MangaData> {
         let ts = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
         let _ = sqlx::query(
@@ -110,23 +111,29 @@ impl Db {
             .fetch_one(&self.pool)
             .await?;
 
-        Ok(manga)
+        Ok(manga.into())
     }
 
-    pub async fn find_manga(&self, id: i64) -> anyhow::Result<Option<MangaDb>> {
+    pub async fn find_manga(&self, id: i64) -> anyhow::Result<Option<MangaData>> {
         let manga: Option<MangaDb> = sqlx::query_as("SELECT * FROM manga WHERE id = ?")
             .bind(id)
             .fetch_optional(&self.pool)
             .await?;
-        Ok(manga)
+        Ok(match manga {
+            Some(m) => Some(m.into()),
+            None => None,
+        })
     }
 
-    pub async fn find_manga_by_url(&self, url: &str) -> anyhow::Result<Option<MangaDb>> {
+    pub async fn find_manga_by_url(&self, url: &str) -> anyhow::Result<Option<MangaData>> {
         let manga: Option<MangaDb> = sqlx::query_as("SELECT * FROM manga WHERE url = ?")
             .bind(url)
             .fetch_optional(&self.pool)
             .await?;
-        Ok(manga)
+        Ok(match manga {
+            Some(m) => Some(m.into()),
+            None => None,
+        })
     }
 
     pub async fn update_manga_time(&self, id: i64, ts: i64) -> anyhow::Result<()> {
@@ -235,6 +242,35 @@ impl Db {
                 .fetch_all(&self.pool)
                 .await?;
         Ok(chapters)
+    }
+}
+
+// MangaDb + domain field
+#[derive(Debug)]
+pub struct MangaData {
+    pub id: i64,
+    pub title: String,
+    pub url: String,
+    pub image: Option<String>,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub domain: String,
+}
+
+impl From<MangaDb> for MangaData {
+    fn from(value: MangaDb) -> Self {
+        let url = Url::parse(&value.url).unwrap();
+        let domain = url.host_str().unwrap_or("").to_string();
+
+        Self {
+            id: value.id,
+            title: value.title,
+            url: value.url,
+            image: value.image,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
+            domain,
+        }
     }
 }
 

@@ -101,6 +101,7 @@ fun MangaListScreen(
                     MangaListItem(
                         title = manga.title,
                         image = manga.image,
+                        domain = manga.domain,
                         onClick = {
                             onSelectManga(manga.id.toString())
                         },

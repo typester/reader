@@ -1053,13 +1053,13 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_manga_checksum_method_manga_get_images() != 48486.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_manga_checksum_method_manga_get_manga() != 47957.toShort()) {
+    if (lib.uniffi_manga_checksum_method_manga_get_manga() != 31586.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_get_site() != 32086.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_manga_checksum_method_manga_list_manga() != 26043.toShort()) {
+    if (lib.uniffi_manga_checksum_method_manga_list_manga() != 51802.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_mark_chapter_read() != 19378.toShort()) {
@@ -1068,7 +1068,7 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_manga_checksum_method_manga_migration_available() != 42674.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_manga_checksum_method_manga_open_manga() != 42200.toShort()) {
+    if (lib.uniffi_manga_checksum_method_manga_open_manga() != 48608.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_reset_db() != 176.toShort()) {
@@ -1747,17 +1747,17 @@ public interface MangaInterface {
     
     suspend fun `getImages`(`url`: kotlin.String): List<kotlin.String>
     
-    suspend fun `getManga`(`id`: kotlin.Long): MangaDb?
+    suspend fun `getManga`(`id`: kotlin.Long): MangaData?
     
     fun `getSite`(`url`: kotlin.String): MangaSite?
     
-    suspend fun `listManga`(): List<MangaDb>
+    suspend fun `listManga`(): List<MangaData>
     
     suspend fun `markChapterRead`(`id`: kotlin.Long, `isRead`: kotlin.Boolean)
     
     suspend fun `migrationAvailable`(): kotlin.Boolean
     
-    suspend fun `openManga`(`link`: Link): MangaDb
+    suspend fun `openManga`(`link`: Link): MangaData
     
     fun `resetDb`()
     
@@ -1963,7 +1963,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
     
     @Throws(MangaException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `getManga`(`id`: kotlin.Long) : MangaDb? {
+    override suspend fun `getManga`(`id`: kotlin.Long) : MangaData? {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_manga_fn_method_manga_get_manga(
@@ -1975,7 +1975,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
         { future, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_complete_rust_buffer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_rust_buffer(future) },
         // lift function
-        { FfiConverterOptionalTypeMangaDb.lift(it) },
+        { FfiConverterOptionalTypeMangaData.lift(it) },
         // Error FFI converter
         MangaException.ErrorHandler,
     )
@@ -1997,7 +1997,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
     
     @Throws(MangaException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `listManga`() : List<MangaDb> {
+    override suspend fun `listManga`() : List<MangaData> {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_manga_fn_method_manga_list_manga(
@@ -2009,7 +2009,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
         { future, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_complete_rust_buffer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_rust_buffer(future) },
         // lift function
-        { FfiConverterSequenceTypeMangaDb.lift(it) },
+        { FfiConverterSequenceTypeMangaData.lift(it) },
         // Error FFI converter
         MangaException.ErrorHandler,
     )
@@ -2061,7 +2061,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
     
     @Throws(MangaException::class)
     @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
-    override suspend fun `openManga`(`link`: Link) : MangaDb {
+    override suspend fun `openManga`(`link`: Link) : MangaData {
         return uniffiRustCallAsync(
         callWithPointer { thisPtr ->
             UniffiLib.INSTANCE.uniffi_manga_fn_method_manga_open_manga(
@@ -2073,7 +2073,7 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
         { future, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_complete_rust_buffer(future, continuation) },
         { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_rust_buffer(future) },
         // lift function
-        { FfiConverterTypeMangaDb.lift(it) },
+        { FfiConverterTypeMangaData.lift(it) },
         // Error FFI converter
         MangaException.ErrorHandler,
     )
@@ -2518,10 +2518,11 @@ public object FfiConverterTypeLink: FfiConverterRustBuffer<Link> {
 
 
 
-data class MangaDb (
+data class MangaData (
     var `id`: kotlin.Long, 
     var `title`: kotlin.String, 
     var `url`: kotlin.String, 
+    var `domain`: kotlin.String, 
     var `image`: kotlin.String?, 
     var `createdAt`: kotlin.Long, 
     var `updatedAt`: kotlin.Long
@@ -2530,10 +2531,11 @@ data class MangaDb (
     companion object
 }
 
-public object FfiConverterTypeMangaDb: FfiConverterRustBuffer<MangaDb> {
-    override fun read(buf: ByteBuffer): MangaDb {
-        return MangaDb(
+public object FfiConverterTypeMangaData: FfiConverterRustBuffer<MangaData> {
+    override fun read(buf: ByteBuffer): MangaData {
+        return MangaData(
             FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterOptionalString.read(buf),
@@ -2542,19 +2544,21 @@ public object FfiConverterTypeMangaDb: FfiConverterRustBuffer<MangaDb> {
         )
     }
 
-    override fun allocationSize(value: MangaDb) = (
+    override fun allocationSize(value: MangaData) = (
             FfiConverterLong.allocationSize(value.`id`) +
             FfiConverterString.allocationSize(value.`title`) +
             FfiConverterString.allocationSize(value.`url`) +
+            FfiConverterString.allocationSize(value.`domain`) +
             FfiConverterOptionalString.allocationSize(value.`image`) +
             FfiConverterLong.allocationSize(value.`createdAt`) +
             FfiConverterLong.allocationSize(value.`updatedAt`)
     )
 
-    override fun write(value: MangaDb, buf: ByteBuffer) {
+    override fun write(value: MangaData, buf: ByteBuffer) {
             FfiConverterLong.write(value.`id`, buf)
             FfiConverterString.write(value.`title`, buf)
             FfiConverterString.write(value.`url`, buf)
+            FfiConverterString.write(value.`domain`, buf)
             FfiConverterOptionalString.write(value.`image`, buf)
             FfiConverterLong.write(value.`createdAt`, buf)
             FfiConverterLong.write(value.`updatedAt`, buf)
@@ -2749,28 +2753,28 @@ public object FfiConverterOptionalTypeChapterDb: FfiConverterRustBuffer<ChapterD
 
 
 
-public object FfiConverterOptionalTypeMangaDb: FfiConverterRustBuffer<MangaDb?> {
-    override fun read(buf: ByteBuffer): MangaDb? {
+public object FfiConverterOptionalTypeMangaData: FfiConverterRustBuffer<MangaData?> {
+    override fun read(buf: ByteBuffer): MangaData? {
         if (buf.get().toInt() == 0) {
             return null
         }
-        return FfiConverterTypeMangaDb.read(buf)
+        return FfiConverterTypeMangaData.read(buf)
     }
 
-    override fun allocationSize(value: MangaDb?): ULong {
+    override fun allocationSize(value: MangaData?): ULong {
         if (value == null) {
             return 1UL
         } else {
-            return 1UL + FfiConverterTypeMangaDb.allocationSize(value)
+            return 1UL + FfiConverterTypeMangaData.allocationSize(value)
         }
     }
 
-    override fun write(value: MangaDb?, buf: ByteBuffer) {
+    override fun write(value: MangaData?, buf: ByteBuffer) {
         if (value == null) {
             buf.put(0)
         } else {
             buf.put(1)
-            FfiConverterTypeMangaDb.write(value, buf)
+            FfiConverterTypeMangaData.write(value, buf)
         }
     }
 }
@@ -2878,24 +2882,24 @@ public object FfiConverterSequenceTypeLink: FfiConverterRustBuffer<List<Link>> {
 
 
 
-public object FfiConverterSequenceTypeMangaDb: FfiConverterRustBuffer<List<MangaDb>> {
-    override fun read(buf: ByteBuffer): List<MangaDb> {
+public object FfiConverterSequenceTypeMangaData: FfiConverterRustBuffer<List<MangaData>> {
+    override fun read(buf: ByteBuffer): List<MangaData> {
         val len = buf.getInt()
-        return List<MangaDb>(len) {
-            FfiConverterTypeMangaDb.read(buf)
+        return List<MangaData>(len) {
+            FfiConverterTypeMangaData.read(buf)
         }
     }
 
-    override fun allocationSize(value: List<MangaDb>): ULong {
+    override fun allocationSize(value: List<MangaData>): ULong {
         val sizeForLength = 4UL
-        val sizeForItems = value.map { FfiConverterTypeMangaDb.allocationSize(it) }.sum()
+        val sizeForItems = value.map { FfiConverterTypeMangaData.allocationSize(it) }.sum()
         return sizeForLength + sizeForItems
     }
 
-    override fun write(value: List<MangaDb>, buf: ByteBuffer) {
+    override fun write(value: List<MangaData>, buf: ByteBuffer) {
         buf.putInt(value.size)
         value.iterator().forEach {
-            FfiConverterTypeMangaDb.write(it, buf)
+            FfiConverterTypeMangaData.write(it, buf)
         }
     }
 }

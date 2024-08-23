@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,8 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -31,9 +34,10 @@ import org.unknownplace.manga.ui.theme.MangaTheme
 
 @Composable
 fun MangaListItem(
-    title: String,
-    image: String?,
     modifier: Modifier = Modifier,
+    title: String,
+    image: String? = null,
+    domain: String? = null,
     onClick: () -> Unit,
     onDeleteItem: () -> Unit = {},
     hideDeleteIcon: Boolean = false,
@@ -55,7 +59,8 @@ fun MangaListItem(
                     contentDescription = null,
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.FillBounds,
                 )
             } ?: run {
                 Box(
@@ -74,16 +79,24 @@ fun MangaListItem(
             ) {
                 Text(text = title)
 
-                if (!hideDeleteIcon) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { onDeleteItem() }) {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                        domain?.let {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = .5f),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        if (!hideDeleteIcon) {
+                            IconButton(onClick = { onDeleteItem() }) {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                            }
                         }
                     }
-                }
             }
         }
     }
@@ -101,6 +114,7 @@ fun MangaListItemPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {},
                 onDeleteItem = {},
+                domain = "example.com"
             )
         }
     }

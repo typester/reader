@@ -11,14 +11,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.unknownplace.manga.Shared
 import uniffi.manga.ChapterDb
-import uniffi.manga.MangaDb
+import uniffi.manga.MangaData
 import uniffi.manga.MangaException
 
 private const val TAG = "ChapterListViewModel"
 
 data class ChapterListUIState(
     val loading: Boolean = true,
-    val manga: MangaDb? = null,
+    val manga: MangaData? = null,
     val chapters: List<ChapterDb> = emptyList(),
 )
 
