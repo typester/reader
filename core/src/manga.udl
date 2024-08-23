@@ -1,0 +1,83 @@
+namespace manga {
+  void init_logger(Logger logger);
+};
+
+interface Manga {
+  [Throws=MangaError]
+  constructor(Config config);
+  sequence<MangaSite> supported_sites();
+  [Async, Throws=MangaError]
+  boolean migration_available();
+  [Async, Throws=MangaError]
+  void do_migration();
+  [Throws=MangaError]
+  void reset_db();
+  [Async, Throws=MangaError]
+  sequence<MangaDb> list_manga();
+  [Async, Throws=MangaError]
+  MangaDb open_manga(Link link);
+  [Async, Throws=MangaError]
+  MangaDb? get_manga(i64 id);
+  [Async, Throws=MangaError]
+  ChapterDb? get_chapter(i64 id);
+  [Async, Throws=MangaError]
+  sequence<ChapterDb> get_chapters(string url);
+  [Async, Throws=MangaError]
+  void mark_chapter_read(i64 id, boolean is_read);
+  [Async, Throws=MangaError]
+  sequence<ChapterDb> get_chapters_cache(string url);
+  [Throws=MangaError]
+  MangaSite? get_site(string url);
+  [Async, Throws=MangaError]
+  sequence<string> get_images(string url);
+};
+
+[Error]
+interface MangaError {
+  InternalError(string msg);
+  NetworkError(string msg);
+  MigrateError(string msg);
+};
+
+dictionary Config {
+  string database_url;
+};
+
+dictionary Link {
+  string text;
+  string url;
+  string? image;
+};
+
+[Trait]
+interface MangaSite {
+  string name();
+  [Async, Throws=MangaError]
+  sequence<Link> search(string text);
+  record<string, string> request_headers();
+};
+
+[Trait, WithForeign]
+interface Logger {
+  void log(string text);
+};
+
+dictionary MangaDb {
+  i64 id;
+  string title;
+  string url;
+  string? image;
+  i64 created_at;
+  i64 updated_at;
+};
+
+dictionary ChapterDb {
+  i64 id;
+  i64 manga;
+  string title;
+  f64 title_number;
+  string url;
+  i64 is_read;
+  i64 created_at;
+  i64 updated_at;
+};
