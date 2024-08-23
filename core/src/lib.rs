@@ -12,7 +12,7 @@ use anyhow::bail;
 use db::{ChapterDb, Db, MangaDb};
 use error::MangaError;
 use log::{FFILogLayer, Logger};
-use sites::{spoilerplustv::Spoilerplustv, Link, MangaSite};
+use sites::{jmangaorg::Jmangaorg, spoilerplustv::Spoilerplustv, Link, MangaSite};
 use tracing_subscriber::{layer::SubscriberExt, Registry};
 
 static _RT: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
@@ -50,7 +50,10 @@ impl Manga {
     }
 
     pub fn supported_sites(&self) -> Vec<Arc<dyn MangaSite>> {
-        vec![Arc::new(Spoilerplustv::default())]
+        vec![
+            Arc::new(Spoilerplustv::default()),
+            Arc::new(Jmangaorg::default()),
+        ]
     }
 
     pub async fn migration_available(&self) -> Result<bool, MangaError> {
