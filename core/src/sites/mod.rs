@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 
 pub mod jmangaorg;
+pub mod mangatopjp;
 pub mod spoilerplustv;
 
 #[derive(Debug)]

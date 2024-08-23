@@ -60,7 +60,7 @@ fun MangaListItem(
                     modifier = Modifier
                         .size(120.dp)
                         .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.FillWidth,
                 )
             } ?: run {
                 Box(
