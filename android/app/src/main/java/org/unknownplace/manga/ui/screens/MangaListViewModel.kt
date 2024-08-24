@@ -42,4 +42,19 @@ class MangaListViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteManga(id: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(loading = true) }
+            try {
+                val core = Shared.instance()
+                withContext(Dispatchers.IO) {
+                    core.deleteManga(id)
+                }
+                load()
+            } catch (e: MangaException) {
+                Log.e(TAG, "failed to delete manga", e)
+            }
+        }
+    }
 }

@@ -21,6 +21,8 @@ interface Manga {
   [Async, Throws=MangaError]
   MangaData? get_manga(i64 id);
   [Async, Throws=MangaError]
+  void delete_manga(i64 id);
+  [Async, Throws=MangaError]
   ChapterDb? get_chapter(i64 id);
   [Async, Throws=MangaError]
   sequence<ChapterDb> get_chapters(string url);

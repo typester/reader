@@ -109,6 +109,13 @@ impl Manga {
         rt().spawn(async move { db.find_manga(id).await }).await?
     }
 
+    pub async fn delete_manga(&self, id: i64) -> anyhow::Result<()> {
+        let db = self.db.clone();
+        rt().spawn(async move {
+            db.delete_manga(id).await
+        }).await?
+    }
+
     pub async fn get_chapter(&self, id: i64) -> anyhow::Result<Option<ChapterDb>> {
         let db = self.db.clone();
         rt().spawn(async move { db.find_chapter(id).await }).await?

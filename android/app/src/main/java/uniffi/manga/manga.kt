@@ -795,6 +795,8 @@ internal open class UniffiVTableCallbackInterfaceMangaSite(
 
 
 
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -829,6 +831,8 @@ internal interface UniffiLib : Library {
     ): Unit
     fun uniffi_manga_fn_constructor_manga_new(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
+    fun uniffi_manga_fn_method_manga_delete_manga(`ptr`: Pointer,`id`: Long,
+    ): Long
     fun uniffi_manga_fn_method_manga_do_migration(`ptr`: Pointer,
     ): Long
     fun uniffi_manga_fn_method_manga_get_chapter(`ptr`: Pointer,`id`: Long,
@@ -985,6 +989,8 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_manga_checksum_method_logger_log(
     ): Short
+    fun uniffi_manga_checksum_method_manga_delete_manga(
+    ): Short
     fun uniffi_manga_checksum_method_manga_do_migration(
     ): Short
     fun uniffi_manga_checksum_method_manga_get_chapter(
@@ -1042,6 +1048,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_logger_log() != 40402.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_manga_checksum_method_manga_delete_manga() != 26840.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_manga_checksum_method_manga_do_migration() != 2971.toShort()) {
@@ -1746,6 +1755,8 @@ public object FfiConverterTypeLogger: FfiConverter<Logger, Pointer> {
 
 public interface MangaInterface {
     
+    suspend fun `deleteManga`(`id`: kotlin.Long)
+    
     suspend fun `doMigration`()
     
     suspend fun `getChapter`(`id`: kotlin.Long): ChapterDb?
@@ -1863,6 +1874,28 @@ open class Manga: Disposable, AutoCloseable, MangaInterface {
         return uniffiRustCall() { status ->
             UniffiLib.INSTANCE.uniffi_manga_fn_clone_manga(pointer!!, status)
         }
+    }
+
+    
+    @Throws(MangaException::class)
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
+    override suspend fun `deleteManga`(`id`: kotlin.Long) {
+        return uniffiRustCallAsync(
+        callWithPointer { thisPtr ->
+            UniffiLib.INSTANCE.uniffi_manga_fn_method_manga_delete_manga(
+                thisPtr,
+                FfiConverterLong.lower(`id`),
+            )
+        },
+        { future, callback, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_poll_void(future, callback, continuation) },
+        { future, continuation -> UniffiLib.INSTANCE.ffi_manga_rust_future_complete_void(future, continuation) },
+        { future -> UniffiLib.INSTANCE.ffi_manga_rust_future_free_void(future) },
+        // lift function
+        { Unit },
+        
+        // Error FFI converter
+        MangaException.ErrorHandler,
+    )
     }
 
     

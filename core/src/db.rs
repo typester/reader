@@ -145,6 +145,16 @@ impl Db {
         Ok(())
     }
 
+    pub async fn delete_manga(&self, id: i64) -> anyhow::Result<()> {
+        let _ = sqlx::query("DELETE FROM chapter WHERE manga = ?")
+            .bind(id)
+            .execute(&self.pool).await?;
+        let _ = sqlx::query("DELETE FROM manga WHERE id = ?")
+            .bind(id)
+            .execute(&self.pool).await?;
+        Ok(())
+    }
+
     pub async fn find_chapter(&self, chapter_id: i64) -> anyhow::Result<Option<ChapterDb>> {
         let chapter: Option<ChapterDb> = sqlx::query_as("SELECT * FROM chapter WHERE id = ?")
             .bind(chapter_id)
