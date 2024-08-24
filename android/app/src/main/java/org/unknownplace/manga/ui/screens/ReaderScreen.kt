@@ -10,19 +10,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -81,75 +77,73 @@ fun ReaderScreen(
         }
     }
 
-
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        HorizontalPager(
-            state = pagerState,
+    HorizontalPager(
+        state = pagerState,
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        singleFirstPageMode.value = !singleFirstPageMode.value
+                    }
+                )
+            },
+        reverseLayout = true,
+    ) { page ->
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = {
-                            singleFirstPageMode.value = !singleFirstPageMode.value
-                        }
+        ) {
+            val firstImageIndex = if (singleFirstPageMode.value && page > 0) page * 2 - 1 else page * 2
+
+            if (page == 0 && singleFirstPageMode.value) {
+                uiState.images.getOrNull(firstImageIndex)?.let {
+                    AsyncImage(
+                        model = ImageRequest.Builder(SharedContext.context())
+                            .data(it)
+                            .apply {
+                                uiState.headers.forEach { (k, v) ->
+                                    setHeader(k, v)
+                                }
+                            }
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxHeight()
                     )
                 }
-        ) { page ->
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                val firstImageIndex = if (singleFirstPageMode.value && page > 0) page * 2 - 1 else page * 2
-
-                if (page == 0 && singleFirstPageMode.value) {
-                    uiState.images.getOrNull(firstImageIndex)?.let {
-                        AsyncImage(
-                            model = ImageRequest.Builder(SharedContext.context())
-                                .data(it)
-                                .apply {
-                                    uiState.headers.forEach { (k, v) ->
-                                        setHeader(k, v)
-                                    }
+            } else {
+                if (firstImageIndex < uiState.images.size) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(SharedContext.context())
+                            .data(uiState.images[firstImageIndex])
+                            .apply {
+                                uiState.headers.forEach { (k, v) ->
+                                    setHeader(k, v)
                                 }
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                        )
-                    }
-                } else {
-                    if (firstImageIndex < uiState.images.size) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(SharedContext.context())
-                                .data(uiState.images[firstImageIndex])
-                                .apply {
-                                    uiState.headers.forEach { (k, v) ->
-                                        setHeader(k, v)
-                                    }
+                            }
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                    )
+                }
+                if (firstImageIndex + 1 < uiState.images.size) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(SharedContext.context())
+                            .data(uiState.images[firstImageIndex + 1])
+                            .apply {
+                                uiState.headers.forEach { (k, v) ->
+                                    setHeader(k, v)
                                 }
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                        )
-                    }
-                    if (firstImageIndex + 1 < uiState.images.size) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(SharedContext.context())
-                                .data(uiState.images[firstImageIndex + 1])
-                                .apply {
-                                    uiState.headers.forEach { (k, v) ->
-                                        setHeader(k, v)
-                                    }
-                                }
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                        )
-                    }
+                            }
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                    )
                 }
             }
         }
