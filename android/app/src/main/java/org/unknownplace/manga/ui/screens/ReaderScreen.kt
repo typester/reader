@@ -1,6 +1,7 @@
 package org.unknownplace.manga.ui.screens
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -27,6 +30,8 @@ import kotlinx.serialization.Serializable
 import org.unknownplace.manga.SharedContext
 import org.unknownplace.manga.lockScreenOrientationToLandscape
 import org.unknownplace.manga.unlockScreenOrientation
+
+private const val TAG = "ReaderScreen"
 
 @Serializable
 data class Reader(val chapterId: String)
@@ -42,10 +47,32 @@ fun ReaderScreen(
     val singleFirstPageMode = remember {
         mutableStateOf(true)
     }
+    var lastPage by remember {
+        mutableStateOf(0)
+    }
+
+    val pagerState = remember(uiState.images.size, singleFirstPageMode.value) {
+        Log.d(TAG, "pagerState updated: page=${lastPage}")
+        PagerState(
+            pageCount = {
+                if (singleFirstPageMode.value) {
+                    (uiState.images.size + 2) / 2
+                } else {
+                    (uiState.images.size + 1) / 2
+                }
+            },
+            currentPage = lastPage,
+        )
+    }
 
     LaunchedEffect(Unit) {
         activity.lockScreenOrientationToLandscape()
         viewModel.load(chapterId)
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        Log.d(TAG, "page updated: ${pagerState.currentPage}")
+        lastPage = pagerState.currentPage
     }
 
     DisposableEffect(Unit) {
@@ -54,15 +81,6 @@ fun ReaderScreen(
         }
     }
 
-    val pagerState = remember(uiState.images.size, singleFirstPageMode.value) {
-        PagerState(pageCount = {
-            if (singleFirstPageMode.value) {
-                (uiState.images.size + 2) / 2
-            } else {
-                (uiState.images.size + 1) / 2
-            }
-        })
-    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         HorizontalPager(
