@@ -61,7 +61,7 @@ fun ReaderScreen(
                     (uiState.images.size + 1) / 2
                 }
             },
-            currentPage = lastPage,
+            currentPage = if (singleFirstPageMode.value || lastPage == 0) lastPage else lastPage - 1,
         )
     }
 
