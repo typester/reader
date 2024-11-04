@@ -5,6 +5,7 @@ use async_trait::async_trait;
 pub mod jmangaorg;
 pub mod mangatopjp;
 pub mod spoilerplustv;
+pub mod rawkuronet;
 
 #[derive(Debug)]
 pub struct Link {
@@ -16,6 +17,7 @@ pub struct Link {
 #[async_trait]
 pub trait MangaSite: Send + Sync {
     fn name(&self) -> String;
+
     async fn search(&self, text: String) -> anyhow::Result<Vec<Link>>;
 
     fn can_handle_chapters(&self, _url: &str) -> bool {

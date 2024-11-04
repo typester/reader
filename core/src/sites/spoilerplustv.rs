@@ -62,7 +62,7 @@ impl MangaSite for Spoilerplustv {
 
                 if let (Some(text), Some(link)) = (text, link) {
                     Some(Link {
-                        text: text.to_string(),
+                        text: text.trim().to_string(),
                         url: format!("https://spoilerplus.tv{}", link),
                         image: None,
                     })
